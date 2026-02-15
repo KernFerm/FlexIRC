@@ -287,3 +287,7 @@ For detailed configuration options, see [COMPREHENSIVE-GUIDE.md](COMPREHENSIVE-G
 ---
 
 **Ready to build your secure chat network!** 🚀
+
+
+
+- [Discord Invite Link](https://discord.gg/zQbJJgwbUv
