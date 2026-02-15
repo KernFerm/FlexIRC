@@ -106,8 +106,6 @@ ENABLE_FEDERATION=false npm start
 | `npm run federated` | Network mode | Basic + Federation |
 | `npm run ultra-secure` | Security mode | Basic + Ultra Security |
 | `npm run dev` | Development with auto-reload | All features |
-| `npm test` | Test basic functionality | - |
-| `npm run test-federated` | Test federation | - |
 
 ## Feature Comparison
 
@@ -144,24 +142,8 @@ All server modes create logs in the `logs/` directory:
 
 ## Windows Installer Preparation
 
-After testing, you can prepare for a Windows installer by:
-
-1. **Test your configuration**:
-   ```bash
-   npm test
-   npm run test-federated
-   ```
-
 2. **Choose your deployment mode** (basic/federated/ultra-secure/full)
 
 3. **Bundle with pkg or electron** for distribution
 
 4. **Include SSL certificates** if using HTTPS mode
-
-5. **Create installer with tools like**:
-   - Inno Setup
-   - NSIS
-   - Advanced Installer
-   - Wix Toolset
-
-The comprehensive server is designed to be easily deployable as a single executable with your chosen feature set.
