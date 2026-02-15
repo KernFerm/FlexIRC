@@ -1,7 +1,7 @@
 # 🚀 FlexIRC
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/username/flexirc)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GNUV3-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-14+-brightgreen.svg)](https://nodejs.org)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/username/flexirc)
 [![JavaScript](https://img.shields.io/badge/language-JavaScript-yellow.svg)](https://github.com/username/flexirc)
