@@ -1,0 +1,105 @@
+{
+  "name": "flexirc",
+  "version": "1.0.0",
+  "description": "A flexible IRC chat server with configurable security and federation features",
+  "main": "main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "node comprehensive-server.js",
+    "dev": "nodemon comprehensive-server.js",
+    "basic": "ENABLE_FEDERATION=false ENABLE_ULTRA_SECURITY=false node comprehensive-server.js",
+    "federated": "ENABLE_ULTRA_SECURITY=false node comprehensive-server.js",
+    "ultra-secure": "ENABLE_FEDERATION=false node comprehensive-server.js",
+    "full-features": "node comprehensive-server.js",
+    "electron": "electron .",
+    "electron-dev": "nodemon --exec electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-all": "electron-builder --win --mac --linux",
+    "dist": "npm run build-win",
+    "pack": "electron-builder --dir",
+    "installer": "npm run build-win"
+  },
+  "keywords": [
+    "irc",
+    "chat",
+    "secure",
+    "websocket"
+  ],
+  "author": "BubblesTheDev",
+  "license": "MIT",
+  "dependencies": {
+    "aes-js": "^3.1.2",
+    "argon2": "^0.44.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dompurify": "^3.3.1",
+    "express": "^5.2.1",
+    "express-session": "^1.18.1",
+    "helmet": "^8.1.0",
+    "hpp": "^0.2.3",
+    "jsdom": "^25.0.1",
+    "jsonwebtoken": "^9.0.3",
+    "node-forge": "^1.3.1",
+    "node-rsa": "^1.1.1",
+    "qrcode": "^1.5.4",
+    "rate-limiter-flexible": "^9.1.1",
+    "speakeasy": "^2.0.0",
+    "uuid": "^13.0.0",
+    "validator": "^13.15.26",
+    "ws": "^8.19.0",
+    "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "electron": "^40.4.1",
+    "electron-builder": "^26.7.0",
+    "nodemon": "^3.1.7"
+  },
+  "build": {
+    "appId": "com.bubbles.flexirc",
+    "productName": "FlexIRC",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "gui.html", 
+      "comprehensive-server.js",
+      "package.json",
+      "node_modules/**/*",
+      "public/**/*",
+      ".env.example",
+      ".env.federated"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "assets/icons8-messaging-100.png",
+      "requestedExecutionLevel": "asInvoker",
+      "forceCodeSigning": false,
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "FlexIRC"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icons8-messaging-100.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icons8-messaging-100.png"
+    }
+  }
+}
