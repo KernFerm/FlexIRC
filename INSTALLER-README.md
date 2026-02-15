@@ -188,3 +188,6 @@ C:\Users\[username]\AppData\Roaming\flexirc\logs\
 
 ---
 **FlexIRC v1.0** - Flexible, secure chat for everyone! 🚀
+
+
+- [Discord Invite Link](https://discord.gg/zQbJJgwbUv)
