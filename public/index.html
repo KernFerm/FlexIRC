@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure IRC Chat</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            height: 100vh;
+            color: #ecf0f1;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            border-right: 2px solid #34495e;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #34495e;
+        }
+
+        .header {
+            background: #1a252f;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #34495e;
+        }
+
+        .header h1 {
+            color: #3498db;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .status {
+            font-size: 0.9em;
+            color: #95a5a6;
+        }
+
+        .auth-form {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 5px;
+            background: #1a252f;
+            color: #ecf0f1;
+            font-size: 14px;
+        }
+
+        .auth-form input::placeholder {
+            color: #95a5a6;
+        }
+
+        .auth-form button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .auth-form button:hover {
+            background: #2980b9;
+        }
+
+        .auth-form button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .channels-section {
+            padding: 15px;
+            flex: 1;
+        }
+
+        .section-title {
+            color: #3498db;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .channels-list, .users-list {
+            list-style: none;
+        }
+
+        .channel-item, .user-item {
+            padding: 8px 12px;
+            margin: 2px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+
+        .channel-item:hover, .user-item:hover {
+            background: #1a252f;
+        }
+
+        .channel-item.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .chat-header {
+            background: #1a252f;
+            padding: 15px;
+            border-bottom: 2px solid #2c3e50;
+        }
+
+        .chat-header h2 {
+            color: #3498db;
+            font-size: 1.2em;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #34495e;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #2c3e50;
+            border-left: 3px solid #3498db;
+        }
+
+        .message.system {
+            background: #1a252f;
+            border-left-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .message.info {
+            background: #1a252f;
+            border-left-color: #3498db;
+            color: #3498db;
+        }
+
+        .message.success {
+            background: #1a252f;
+            border-left-color: #27ae60;
+            color: #27ae60;
+        }
+
+        .message.error {
+            background: #1a252f;
+            border-left-color: #e74c3c;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .message .username {
+            color: #3498db;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .message .username.federated {
+            color: #e67e22;
+        }
+
+        .message .server-badge {
+            background: #e67e22;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+
+        .message .timestamp {
+            color: #95a5a6;
+            font-size: 11px;
+            float: right;
+        }
+
+        .message .content {
+            margin-top: 3px;
+            line-height: 1.4;
+        }
+
+        .message-input-container {
+            background: #2c3e50;
+            padding: 15px;
+            border-top: 2px solid #1a252f;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background: #1a252f;
+            color: #ecf0f1;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .message-input::placeholder {
+            color: #95a5a6;
+        }
+
+        .send-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            background: #27ae60;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .send-button:hover {
+            background: #219a52;
+        }
+
+        .send-button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .error {
+            background: #e74c3c !important;
+            color: white;
+        }
+
+        .success {
+            background: #27ae60 !important;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .user-controls {
+            padding: 15px;
+            border-top: 1px solid #1a252f;
+        }
+
+        .control-button {
+            width: 100%;
+            padding: 8px;
+            margin: 3px 0;
+            border: none;
+            border-radius: 5px;
+            background: #e74c3c;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .control-button:hover {
+            background: #c0392b;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 200px;
+            }
+            
+            .channels-section {
+                display: flex;
+                gap: 20px;
+            }
+            
+            .channels-section > div {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <h1>🔒 SecureIRC</h1>
+                <div class="status" id="connection-status">Disconnected</div>
+            </div>
+
+            <div class="auth-form" id="auth-form">
+                <h3 style="margin-bottom: 15px;">Login / Register</h3>
+                <input type="text" id="username" placeholder="Username" maxlength="20">
+                <input type="password" id="password" placeholder="Password" maxlength="100">
+                <button onclick="login()" id="login-btn">Login</button>
+                <button onclick="register()" id="register-btn">Register</button>
+            </div>
+
+            <div class="channels-section hidden" id="channels-section">
+                <div>
+                    <div class="section-title">📋 Channels</div>
+                    <ul class="channels-list" id="channels-list">
+                        <li class="channel-item" onclick="joinChannel('#general')">#general</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <div class="section-title">👥 Users</div>
+                    <ul class="users-list" id="users-list"></ul>
+                </div>
+            </div>
+
+            <div class="user-controls hidden" id="user-controls">
+                <button class="control-button" onclick="disconnect()">Disconnect</button>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <h2 id="channel-title">Welcome to Secure IRC</h2>
+                <div style="font-size: 12px; color: #95a5a6; margin-top: 5px;" id="channel-info">
+                    Connect and join a channel to start chatting
+                </div>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <div class="message system">
+                    <div class="content">
+                        <strong>Welcome to Secure IRC Chat!</strong><br>
+                        🔒 This server includes enhanced security features<br>
+                        📝 Please login or register to start chatting<br>
+                        💬 Type your messages below once connected<br>
+                        🚫 Rate limiting and input sanitization are active
+                    </div>
+                </div>
+            </div>
+
+            <div class="message-input-container">
+                <input type="text" class="message-input" id="message-input" 
+                       placeholder="Connect to a channel to send messages..." 
+                       maxlength="500" disabled>
+                <button class="send-button" id="send-button" onclick="sendMessage()" disabled>Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentChannel = null;
+        let authenticated = false;
+        let username = '';
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+
+        // Initialize connection
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('Connected to server');
+                updateConnectionStatus('Connected', 'success');
+                reconnectAttempts = 0;
+            };
+
+            ws.onmessage = function(event) {
+                try {
+                    const message = JSON.parse(event.data);
+                    handleMessage(message);
+                } catch (error) {
+                    console.error('Failed to parse message:', error);
+                }
+            };
+
+            ws.onclose = function() {
+                console.log('Disconnected from server');
+                updateConnectionStatus('Disconnected', 'error');
+                authenticated = false;
+                showAuthForm();
+                
+                // Attempt reconnection
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    updateConnectionStatus(`Reconnecting... (${reconnectAttempts}/${maxReconnectAttempts})`, 'error');
+                    setTimeout(connect, 2000 * reconnectAttempts);
+                }
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus('Connection Error', 'error');
+            };
+        }
+
+        function updateConnectionStatus(status, type) {
+            const statusElement = document.getElementById('connection-status');
+            statusElement.textContent = status;
+            statusElement.className = `status ${type || ''}`;
+        }
+
+        function login() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            
+            if (!usernameInput.value || !passwordInput.value) {
+                showMessage('Please enter username and password', 'error');
+                return;
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'auth',
+                    username: usernameInput.value,
+                    password: passwordInput.value
+                }));
+                
+                setButtonsEnabled(false);
+            } else {
+                showMessage('Not connected to server', 'error');
+            }
+        }
+
+        function register() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            
+            if (!usernameInput.value || !passwordInput.value) {
+                showMessage('Please enter username and password', 'error');
+                return;
+            }
+
+            if (passwordInput.value.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'register',
+                    username: usernameInput.value,
+                    password: passwordInput.value
+                }));
+                
+                setButtonsEnabled(false);
+            } else {
+                showMessage('Not connected to server', 'error');
+            }
+        }
+
+        function setButtonsEnabled(enabled) {
+            document.getElementById('login-btn').disabled = !enabled;
+            document.getElementById('register-btn').disabled = !enabled;
+        }
+
+        function handleMessage(message) {
+            switch (message.type) {
+                case 'server_info':
+                    showMessage(message.message, 'system');
+                    if (message.federatedServers && message.federatedServers.length > 0) {
+                        showMessage(`Connected to ${message.federatedServers.length} federated servers: ${message.federatedServers.join(', ')}`, 'system');
+                    }
+                    break;
+                    
+                case 'auth_success':
+                    username = message.username;
+                    authenticated = true;
+                    showChannelsSection();
+                    showMessage(`Welcome, ${username}!`, 'success');
+                    joinChannel('#general'); // Auto-join general channel
+                    break;
+                    
+                case 'register_success':
+                    showMessage(message.message, 'success');
+                    setButtonsEnabled(true);
+                    break;
+                    
+                case 'error':
+                    showMessage(message.message, 'error');
+                    setButtonsEnabled(true);
+                    break;
+                    
+                case 'channel_joined':
+                    currentChannel = message.channel;
+                    updateChannelInfo(message.channel, message.users);
+                    showMessage(`Joined channel: ${message.channel}`, 'system');
+                    enableMessageInput();
+                    break;
+                    
+                case 'message':
+                    displayChatMessage(message);
+                    break;
+                    
+                case 'user_joined':
+                    showMessage(`${message.username} joined the channel`, 'system');
+                    break;
+                    
+                case 'user_left':
+                    showMessage(`${message.username} left the channel`, 'system');
+                    break;
+                    
+                case 'user_list':
+                    if (message.channel) {
+                        // Response to /users command
+                        showMessage(`Users in ${message.channel}: ${message.users.join(', ')}`, 'info');
+                    } else {
+                        updateUsersList(message.users);
+                    }
+                    break;
+
+                case 'channel_list':
+                    // Response to /list command
+                    if (message.channels && message.channels.length > 0) {
+                        showMessage('Available channels:', 'info');
+                        message.channels.forEach(channel => {
+                            showMessage(`  ${channel.name} (${channel.users} users) - ${channel.topic || 'No topic'}`, 'info');
+                        });
+                    } else {
+                        showMessage('No channels available', 'info');
+                    }
+                    break;
+                    
+                case 'server_list':
+                    const serverList = message.servers.length > 0 ? 
+                        message.servers.join(', ') : 'None';
+                    showMessage(`Connected Federated Servers: ${serverList}`, 'system');
+                    showMessage(`Current Server: ${message.currentServer}`, 'system');
+                    break;
+                    
+                case 'command_success':
+                    showMessage(message.message, 'success');
+                    break;
+                    
+                case 'disconnect':
+                    showMessage(`Disconnected: ${message.reason}`, 'error');
+                    disconnect();
+                    break;
+            }
+        }
+
+        function showAuthForm() {
+            document.getElementById('auth-form').classList.remove('hidden');
+            document.getElementById('channels-section').classList.add('hidden');
+            document.getElementById('user-controls').classList.add('hidden');
+            document.getElementById('message-input').disabled = true;
+            document.getElementById('send-button').disabled = true;
+            setButtonsEnabled(true);
+        }
+
+        function showChannelsSection() {
+            document.getElementById('auth-form').classList.add('hidden');
+            document.getElementById('channels-section').classList.remove('hidden');
+            document.getElementById('user-controls').classList.remove('hidden');
+        }
+
+        function joinChannel(channelName) {
+            if (!authenticated) return;
+            
+            ws.send(JSON.stringify({
+                type: 'join',
+                channel: channelName
+            }));
+            
+            // Update UI
+            document.querySelectorAll('.channel-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[onclick="joinChannel('${channelName}')"]`)?.classList.add('active');
+        }
+
+        function updateChannelInfo(channelName, users) {
+            document.getElementById('channel-title').textContent = channelName;
+            document.getElementById('channel-info').textContent = `${users.length} users online`;
+            updateUsersList(users);
+        }
+
+        function updateUsersList(users) {
+            const usersList = document.getElementById('users-list');
+            usersList.innerHTML = '';
+            
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.className = 'user-item';
+                li.textContent = user;
+                if (user === username) {
+                    li.style.fontWeight = 'bold';
+                    li.style.color = '#3498db';
+                }
+                usersList.appendChild(li);
+            });
+        }
+
+        function enableMessageInput() {
+            document.getElementById('message-input').disabled = false;
+            document.getElementById('send-button').disabled = false;
+            document.getElementById('message-input').placeholder = 'Type your message...';
+            document.getElementById('message-input').focus();
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const content = messageInput.value.trim();
+            
+            if (!content || !currentChannel || !authenticated) return;
+            
+            // Check if this is a command
+            if (content.startsWith('/')) {
+                handleCommand(content);
+            } else {
+                // Regular chat message
+                ws.send(JSON.stringify({
+                    type: 'chat',
+                    channel: currentChannel,
+                    content: content
+                }));
+            }
+            
+            messageInput.value = '';
+        }
+
+        function handleCommand(command) {
+            const parts = command.slice(1).split(' '); // Remove '/' and split
+            const cmd = parts[0].toLowerCase();
+            
+            switch (cmd) {
+                case 'list':
+                    ws.send(JSON.stringify({ type: 'list' }));
+                    break;
+                    
+                case 'users':
+                    const channel = parts[1] || currentChannel;
+                    ws.send(JSON.stringify({ 
+                        type: 'users', 
+                        channel: channel 
+                    }));
+                    break;
+                    
+                case 'kick':
+                    if (parts[1]) {
+                        const reason = parts.slice(2).join(' ') || 'No reason provided';
+                        ws.send(JSON.stringify({ 
+                            type: 'kick', 
+                            username: parts[1],
+                            reason: reason
+                        }));
+                    } else {
+                        showMessage('Usage: /kick <username> [reason]', 'error');
+                    }
+                    break;
+                    
+                case 'ban':
+                    if (parts[1]) {
+                        ws.send(JSON.stringify({ 
+                            type: 'ban', 
+                            username: parts[1]
+                        }));
+                    } else {
+                        showMessage('Usage: /ban <username>', 'error');
+                    }
+                    break;
+                    
+                default:
+                    showMessage(`Unknown command: /${cmd}`, 'error');
+                    showMessage('Available commands: /list, /users [#channel], /kick <user> [reason], /ban <user>', 'info');
+            }
+        }
+
+        function displayChatMessage(message) {
+            const messagesContainer = document.getElementById('messages-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const timestamp = new Date(message.timestamp).toLocaleTimeString();
+            
+            // Check if this is a federated message (username contains @)
+            const isFederated = message.username && message.username.includes('@');
+            const usernameClass = isFederated ? 'username federated' : 'username';
+            
+            let serverBadge = '';
+            if (isFederated) {
+                const serverName = message.username.split('@')[1];
+                serverBadge = `<span class="server-badge">${serverName}</span>`;
+            }
+            
+            messageDiv.innerHTML = `
+                <span class="${usernameClass}">${message.username}${serverBadge}</span>
+                <span class="timestamp">${timestamp}</span>
+                <div class="content">${escapeHtml(message.content)}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showMessage(content, type = '') {
+            const messagesContainer = document.getElementById('messages-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message system ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                <span class="timestamp">${timestamp}</span>
+                <div class="content">${escapeHtml(content)}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+            }
+            authenticated = false;
+            currentChannel = null;
+            showAuthForm();
+            
+            // Clear messages
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.innerHTML = `
+                <div class="message system">
+                    <div class="content">Disconnected from server</div>
+                </div>
+            `;
+        }
+
+        // Event listeners
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        document.getElementById('username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('password').focus();
+            }
+        });
+
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
+        // Connect on page load
+        connect();
+    </script>
+</body>
+</html>
